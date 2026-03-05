@@ -86,12 +86,41 @@ class ProgressResponse(BaseModel):
 
 # ==================== Helper Functions ====================
 
+def _find_template_path(task_id: str) -> Path | None:
+    """Find template notebook path by task_id.
+    
+    Template files are named like '01_relu.ipynb', task_id is 'relu'.
+    """
+    templates_dir = Path(__file__).parent.parent / "templates"
+    
+    # Try exact match first
+    exact = templates_dir / f"{task_id}.ipynb"
+    if exact.exists():
+        return exact
+    
+    # Try with number prefix (e.g., 01_relu.ipynb)
+    for f in templates_dir.glob("*.ipynb"):
+        # Match patterns like "01_relu.ipynb" where task_id is "relu"
+        name = f.stem  # "01_relu"
+        if name.endswith(f"_{task_id}") or name == task_id:
+            return f
+        # Also try matching the task_id directly in the name
+        parts = name.split("_", 1)
+        if len(parts) == 2 and parts[1] == task_id:
+            return f
+    
+    return None
+
+
 def _get_task_description(task_id: str) -> str:
-    """Get task description from template notebook or generate from task."""
-    template_path = Path(__file__).parent.parent / "templates" / f"{task_id}.ipynb"
+    """Get task description from template notebook or generate from task.
+    
+    Note: Signature and Example sections are removed since they're shown separately.
+    """
+    template_path = _find_template_path(task_id)
     
     # Try to get from template notebook markdown
-    if template_path.exists():
+    if template_path and template_path.exists():
         try:
             with open(template_path, encoding="utf-8") as f:
                 nb = json.load(f)
@@ -99,7 +128,8 @@ def _get_task_description(task_id: str) -> str:
                 if cell.get("cell_type") == "markdown":
                     source = "".join(cell.get("source", []))
                     if task_id in source.lower() or "implement" in source.lower():
-                        return source.strip()
+                        # Remove Signature and Example sections since they're shown separately
+                        return _clean_description(source.strip())
         except Exception:
             pass
     
@@ -132,19 +162,41 @@ def _extract_example_from_markdown(markdown: str) -> str:
     return ""
 
 
+def _clean_description(markdown: str) -> str:
+    """Remove Signature and Example sections from description since they're shown separately."""
+    import re
+    # Remove Signature section (### Signature ... ```python ... ```)
+    markdown = re.sub(
+        r'###\s*Signature\s*```python\s*.*?```',
+        '',
+        markdown,
+        flags=re.DOTALL | re.IGNORECASE
+    )
+    # Remove Example section (### Example ... ``` ... ```)
+    markdown = re.sub(
+        r'###\s*Example\s*```\s*.*?```',
+        '',
+        markdown,
+        flags=re.DOTALL | re.IGNORECASE
+    )
+    # Clean up extra blank lines
+    markdown = re.sub(r'\n{3,}', '\n\n', markdown)
+    return markdown.strip()
+
+
 def _get_template_code(task_id: str) -> tuple[str, str, str]:
     """Extract template code, signature, and example from notebook.
     
     Returns: (template_code, signature, example)
     """
-    template_path = Path(__file__).parent.parent / "templates" / f"{task_id}.ipynb"
+    template_path = _find_template_path(task_id)
     
     signature = ""
     example = ""
     template_code = ""
     markdown_content = ""
     
-    if template_path.exists():
+    if template_path and template_path.exists():
         try:
             with open(template_path, encoding="utf-8") as f:
                 nb = json.load(f)

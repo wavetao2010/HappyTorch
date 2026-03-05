@@ -6,6 +6,10 @@
     <title>HappyTorch - PyTorch 刷题平台</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         :root {
             --bg-primary: #0d1117;
@@ -331,6 +335,34 @@
             color: var(--text-primary);
         }
 
+        .description-panel h3 {
+            font-size: 1rem;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .description-panel p {
+            margin-bottom: 12px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .description-panel ul {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+
+        .description-panel li {
+            margin-bottom: 6px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        .description-panel strong {
+            color: var(--text-primary);
+        }
+
         .description-panel pre {
             background: var(--bg-tertiary);
             padding: 16px;
@@ -630,6 +662,60 @@
             animation: slideIn 0.3s ease;
         }
 
+        /* Hint Tooltip - shows next to hint button */
+        .hint-tooltip {
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 12px;
+            padding: 12px 20px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--warning);
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            width: max-content;
+            max-width: 800px;
+            white-space: normal;
+            word-wrap: break-word;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .hint-tooltip::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 6px solid transparent;
+            border-right-color: var(--warning);
+        }
+
+        .hint-tooltip::after {
+            content: '';
+            position: absolute;
+            left: -4px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 5px solid transparent;
+            border-right-color: var(--bg-tertiary);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50%) translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(-50%) translateX(0);
+            }
+        }
+
         .toast.success {
             background: var(--success);
             color: #fff;
@@ -768,11 +854,11 @@
                 </div>
 
                 <div class="action-bar">
-                    <div class="action-left">
+                    <div class="action-left" style="position: relative;">
                         <button class="btn btn-secondary" onclick="resetCode()">
                             <i class="ri-refresh-line"></i> 重置代码
                         </button>
-                        <button class="btn btn-secondary" onclick="showHint()">
+                        <button class="btn btn-secondary" id="hintBtn" onclick="showHint()">
                             <i class="ri-lightbulb-line"></i> 提示
                         </button>
                     </div>
@@ -1001,8 +1087,21 @@
                 exSection.style.display = 'none';
             }
 
-            // Set description
-            document.getElementById('descriptionContent').innerHTML = `<pre>${escapeHtml(task.description || '暂无描述')}</pre>`;
+            // Set description - render as Markdown
+            const descEl = document.getElementById('descriptionContent');
+            if (task.description) {
+                descEl.innerHTML = marked.parse(task.description);
+                // Render LaTeX math formulas
+                renderMathInElement(descEl, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } else {
+                descEl.innerHTML = '<p>暂无描述</p>';
+            }
             document.getElementById('hintContent').textContent = task.hint;
 
             // Reset tabs
@@ -1059,11 +1158,44 @@
             }
         }
 
+        let hintTooltip = null;
+
         function showHint() {
-            if (currentTask) {
-                showToast(`💡 ${currentTask.hint}`, 'info');
+            if (!currentTask) return;
+
+            // Remove existing tooltip
+            if (hintTooltip) {
+                hintTooltip.remove();
+                hintTooltip = null;
+                return;
             }
+
+            // Create tooltip
+            const btn = document.getElementById('hintBtn');
+            const tooltip = document.createElement('div');
+            tooltip.className = 'hint-tooltip';
+            tooltip.innerHTML = `💡 ${currentTask.hint}`;
+
+            // Position relative to button's parent (action-left)
+            btn.parentElement.appendChild(tooltip);
+            hintTooltip = tooltip;
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                if (hintTooltip === tooltip) {
+                    tooltip.remove();
+                    hintTooltip = null;
+                }
+            }, 5000);
         }
+
+        // Hide hint when clicking elsewhere
+        document.addEventListener('click', (e) => {
+            if (hintTooltip && !e.target.closest('#hintBtn') && !e.target.closest('.hint-tooltip')) {
+                hintTooltip.remove();
+                hintTooltip = null;
+            }
+        });
 
         function showProgressModal() {
             const modal = document.getElementById('progressModal');
