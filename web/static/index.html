@@ -1066,11 +1066,15 @@
             submitBtn.innerHTML = '<i class="ri-loader-4-line" style="animation: spin 1s linear infinite;"></i> 运行中...';
 
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 60000);
                 const res = await fetch(`${API_BASE}/api/submit`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ task_id: currentTask.id, code })
+                    body: JSON.stringify({ task_id: currentTask.id, code }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
                 const result = await res.json();
 
                 showResults(result);
@@ -1081,7 +1085,11 @@
                 }
             } catch (e) {
                 console.error('Submit failed:', e);
-                showToast('提交失败', 'error');
+                if (e.name === 'AbortError') {
+                    showToast('运行超时（60秒），请检查代码是否有死循环', 'error');
+                } else {
+                    showToast('提交失败，请检查服务器是否运行', 'error');
+                }
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="ri-play-line"></i> 运行测试';

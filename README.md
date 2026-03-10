@@ -11,10 +11,11 @@
 [![Python](https://img.shields.io/badge/Python_3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
-![Problems](https://img.shields.io/badge/problems-35-orange?style=flat-square)
+![Problems](https://img.shields.io/badge/problems-36-orange?style=flat-square)
 ![GPU](https://img.shields.io/badge/GPU-not%20required-brightgreen?style=flat-square)
 
 > **News**
+> - 2026-03-10: Thanks to [SongHuang1](https://github.com/SongHuang1) for contributing the MLP XOR training problem (pure NumPy, manual forward + backward). Fixed Web UI issues: class-based tasks (LoRA, SwiGLU, etc.) now work correctly, added `nn`/`F`/`numpy`/`math` to execution namespace, fixed OpenMP crash on Windows, added MHA solution lookup, added 60s request timeout.
 > - 2026-03-09: Thanks to [chaoyitud](https://github.com/chaoyitud) for adding ML and RLHF practice problems. Thanks to [fiberproduct](https://github.com/fiberproduct) for fixing `torch_judge/tasks/rope.py`. Welcome everybody to contribute more problems!
 > - 2026-03-06: The plugin [happytorch-plugin](https://github.com/Rivflyyy/happytorch-plugin) has been released.
 
@@ -28,11 +29,11 @@ If you're learning deep learning or preparing for ML interviews, you might have 
 - You're asked to implement `softmax` or `MultiHeadAttention` in an interview, and your mind goes blank
 - You want to deeply understand Transformer, LoRA, Diffusion, RLHF, but lack systematic practice
 
-**HappyTorch** provides a friendly hands-on practice environment with **35 curated problems**, from basic activation functions to complete Transformer components and RLHF algorithms.
+**HappyTorch** provides a friendly hands-on practice environment with **36 curated problems**, from basic activation functions to complete Transformer components and RLHF algorithms.
 
 | Feature | Description |
 |---------|-------------|
-| **35 curated problems** | From basics to advanced, covering mainstream deep learning topics |
+| **36 curated problems** | From basics to advanced, covering mainstream deep learning topics |
 | **Auto-grading** | Instant feedback showing what you got right and where to improve |
 | **Two interfaces** | LeetCode-like Web UI (Monaco Editor) or Jupyter notebooks |
 | **Helpful hints** | Get nudges when stuck, not full spoilers |
@@ -94,7 +95,7 @@ python start_web.py
 
 ---
 
-## Problem Set (35 Problems)
+## Problem Set (36 Problems)
 
 ### Fundamentals
 
@@ -167,6 +168,7 @@ python start_web.py
 | 25 | K-Means Clustering | `kmeans` | ![Medium](https://img.shields.io/badge/-Medium-FF9800?style=flat-square) | Iterative centroid update, assignment |
 | 26 | K-Nearest Neighbors | `knn_predict` | ![Easy](https://img.shields.io/badge/-Easy-4CAF50?style=flat-square) | Distance-based classification |
 | 27 | MLP Backward | `mlp_backward` | ![Hard](https://img.shields.io/badge/-Hard-F44336?style=flat-square) | Hand-written backprop for 2-layer MLP |
+| 36 | MLP XOR Training | `mlp_xor` | ![Hard](https://img.shields.io/badge/-Hard-F44336?style=flat-square) | Complete MLP training loop (pure NumPy), He init, MSE loss |
 | 28 | Greedy Decoding | `greedy_decode` | ![Easy](https://img.shields.io/badge/-Easy-4CAF50?style=flat-square) | Argmax token selection |
 | 29 | Beam Search | `beam_search_decode` | ![Hard](https://img.shields.io/badge/-Hard-F44336?style=flat-square) | Beam search decoding strategy |
 | 30 | Temperature Sampling | `temperature_sample` | ![Medium](https://img.shields.io/badge/-Medium-FF9800?style=flat-square) | Temperature-scaled softmax sampling |
@@ -218,7 +220,7 @@ status()                    # Progress dashboard
 | **2** | Attention | SDPA, MHA, Causal, GQA, Sliding Window, Linear Attention | 3–4 hrs |
 | **3** | Modern Components | GELU, SiLU, SwiGLU, LoRA, DoRA | 2–3 hrs |
 | **4** | Advanced Topics | AdaLN, FiLM, RoPE, KV Cache, GPT-2 Block | 3–4 hrs |
-| **5** | ML & RLHF | K-Means, KNN, MLP Backward, Decoding Strategies, PPO, DPO, GRPO | 3–4 hrs |
+| **5** | ML & RLHF | K-Means, KNN, MLP Backward, MLP XOR, Decoding Strategies, PPO, DPO, GRPO | 3–4 hrs |
 
 ---
 
@@ -266,7 +268,7 @@ Progress is saved in <code>data/progress.json</code>. Your solutions in <code>no
 <details>
 <summary><b>What's different from the original TorchCode?</b></summary>
 <br>
-HappyTorch extends <a href="https://github.com/duoan/TorchCode">TorchCode</a> (13 problems) with 22 additional problems covering modern activations, LoRA/DoRA, Diffusion components, LLM inference, decoding strategies, and RLHF algorithms.
+HappyTorch extends <a href="https://github.com/duoan/TorchCode">TorchCode</a> (13 problems) with 23 additional problems covering modern activations, LoRA/DoRA, Diffusion components, LLM inference, decoding strategies, RLHF algorithms, and a manual NumPy MLP training exercise.
 </details>
 
 ---
@@ -279,6 +281,7 @@ Community contributions:
 - [chaoyitud](https://github.com/chaoyitud) — ML fundamentals and RLHF practice problems
 - [fiberproduct](https://github.com/fiberproduct) — RoPE task fix
 - [Rivflyyy](https://github.com/Rivflyyy) — [happytorch-plugin](https://github.com/Rivflyyy/happytorch-plugin)
+- [SongHuang1](https://github.com/SongHuang1) — MLP XOR training problem
 
 ## License
 

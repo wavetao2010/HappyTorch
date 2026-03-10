@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 import traceback
@@ -11,6 +12,12 @@ from io import StringIO
 from pathlib import Path
 from typing import Any
 
+import math
+
+# Prevent OpenMP duplicate library crash on Windows (numpy + torch both bundle libiomp5md.dll)
+os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+
+import numpy as np
 import torch
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -86,6 +93,12 @@ class ProgressResponse(BaseModel):
 
 # ==================== Helper Functions ====================
 
+# Task ID to notebook name mapping for cases where they don't match
+_TASK_NOTEBOOK_ALIASES = {
+    "mha": "multihead_attention",
+}
+
+
 def _find_notebook_path(task_id: str, directory: str, suffix: str = "") -> Path | None:
     """Find notebook path by task_id in a given directory.
 
@@ -95,21 +108,28 @@ def _find_notebook_path(task_id: str, directory: str, suffix: str = "") -> Path 
     if not base_dir.exists():
         return None
 
-    # Try exact match first
-    exact = base_dir / f"{task_id}{suffix}.ipynb"
-    if exact.exists():
-        return exact
+    # Check aliases
+    lookup_ids = [task_id]
+    if task_id in _TASK_NOTEBOOK_ALIASES:
+        lookup_ids.append(_TASK_NOTEBOOK_ALIASES[task_id])
+
+    for lid in lookup_ids:
+        # Try exact match first
+        exact = base_dir / f"{lid}{suffix}.ipynb"
+        if exact.exists():
+            return exact
 
     # Try with number prefix (e.g., 01_relu.ipynb or 01_relu_solution.ipynb)
     for f in base_dir.glob(f"*{suffix}.ipynb"):
         name = f.stem  # "01_relu" or "01_relu_solution"
         # Remove suffix to get base name
         base = name.removesuffix(suffix) if suffix else name
-        if base.endswith(f"_{task_id}") or base == task_id:
-            return f
-        parts = base.split("_", 1)
-        if len(parts) == 2 and parts[1] == task_id:
-            return f
+        for lid in lookup_ids:
+            if base.endswith(f"_{lid}") or base == lid:
+                return f
+            parts = base.split("_", 1)
+            if len(parts) == 2 and parts[1] == lid:
+                return f
 
     return None
 
@@ -224,14 +244,22 @@ def _get_template_code(task_id: str) -> tuple[str, str, str]:
             example = _extract_example_from_markdown(markdown_content)
             
             # Extract template code
+            import_lines = []
             for cell in nb.get("cells", []):
                 if cell.get("cell_type") == "code":
                     source = "".join(cell.get("source", []))
-                    if "TODO" in source or "def " in source or "class " in source:
-                        # Skip import-only cells
-                        if source.strip().startswith("import") and "\n" not in source.strip():
+                    stripped = source.strip()
+                    # Collect import-only cells
+                    if stripped.startswith("import") or stripped.startswith("from"):
+                        if "torch_judge" not in stripped:
+                            import_lines.append(stripped)
                             continue
-                        template_code = source.strip()
+                    if "TODO" in source or "def " in source or "class " in source:
+                        # Prepend collected imports so class-based templates have nn, F, etc.
+                        if import_lines:
+                            template_code = "\n".join(import_lines) + "\n\n" + stripped
+                        else:
+                            template_code = stripped
                         break
         except Exception:
             pass
@@ -309,9 +337,14 @@ def _run_tests(task_id: str, code: str) -> tuple[int, int, float, list[dict], st
     total = len(tests)
     total_time = 0.0
     
-    # Prepare namespace with torch
+    # Prepare namespace with torch and numpy
     namespace: dict[str, Any] = {
         "torch": torch,
+        "nn": torch.nn,
+        "F": torch.nn.functional,
+        "np": np,
+        "numpy": np,
+        "math": math,
         "__builtins__": __builtins__,
     }
     

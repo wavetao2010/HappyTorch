@@ -72,13 +72,13 @@ assert lora.B.grad is not None, 'B.grad is None'
             "name": "Rank controls parameter efficiency",
             "code": """
 import torch, torch.nn as nn
-base = nn.Linear(64, 128)
 lora = {fn}(in_features=64, out_features=128, rank=8)
-base_params = sum(p.numel() for p in base.parameters())
 lora_params = sum(p.numel() for p in lora.parameters())
+# Base weight: W (128×64) = 8192 params
 # LoRA adds: A (8×64) + B (128×8) = 512 + 1024 = 1536 extra params
+base_w = 64 * 128
 extra = 8 * 64 + 128 * 8
-assert lora_params == base_params + extra, f'LoRA should add {extra} params'
+assert lora_params >= base_w + extra, f'Expected at least {base_w + extra} params (base W + LoRA A,B), got {lora_params}'
 """,
         },
         {

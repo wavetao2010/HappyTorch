@@ -11,10 +11,11 @@
 [![Python](https://img.shields.io/badge/Python_3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
-![Problems](https://img.shields.io/badge/题目数-35-orange?style=flat-square)
+![Problems](https://img.shields.io/badge/题目数-36-orange?style=flat-square)
 ![GPU](https://img.shields.io/badge/GPU-无需-brightgreen?style=flat-square)
 
 > **动态**
+> - 2026-03-10：感谢 [SongHuang1](https://github.com/SongHuang1) 贡献 MLP XOR 训练题目（纯 NumPy 手写前向+反向传播）。修复 Web 界面问题：class 类题目（LoRA、SwiGLU 等）现已正常工作，执行环境添加 `nn`/`F`/`numpy`/`math` 支持，修复 Windows 上 OpenMP 冲突导致的崩溃，修复 MHA 题解查找，前端增加 60 秒请求超时保护。
 > - 2026-03-09：感谢 [chaoyitud](https://github.com/chaoyitud) 新增 ML 与 RLHF 练习题目，感谢 [fiberproduct](https://github.com/fiberproduct) 修复 `torch_judge/tasks/rope.py`。欢迎大家贡献更多题目！
 > - 2026-03-06：插件 [happytorch-plugin](https://github.com/Rivflyyy/happytorch-plugin) 已发布。
 
@@ -28,11 +29,11 @@
 - 面试被要求从零实现 `softmax` 或 `MultiHeadAttention`，脑子一片空白
 - 想深入理解 Transformer、LoRA、Diffusion、RLHF，但缺乏系统性的动手练习
 
-**HappyTorch** 提供一个友好的实践环境，包含 **35 道精选题目**，从基础激活函数到完整 Transformer 组件和 RLHF 算法，帮助你循序渐进地提升。
+**HappyTorch** 提供一个友好的实践环境，包含 **36 道精选题目**，从基础激活函数到完整 Transformer 组件和 RLHF 算法，帮助你循序渐进地提升。
 
 | 特性 | 说明 |
 |------|------|
-| **35 道精选题目** | 从基础到进阶，覆盖主流深度学习技术栈 |
+| **36 道精选题目** | 从基础到进阶，覆盖主流深度学习技术栈 |
 | **自动评测** | 即时反馈，清晰展示每个测试用例的通过/失败状态 |
 | **双界面** | LeetCode 风格的 Web 界面（Monaco 编辑器）或 Jupyter Notebook |
 | **智能提示** | 卡住时给你思路，而非直接给答案 |
@@ -94,7 +95,7 @@ python start_web.py
 
 ---
 
-## 题目列表（共 35 题）
+## 题目列表（共 36 题）
 
 ### 基础层
 
@@ -167,6 +168,7 @@ python start_web.py
 | 25 | K-Means 聚类 | `kmeans` | ![Medium](https://img.shields.io/badge/-中等-FF9800?style=flat-square) | 迭代质心更新，样本分配 |
 | 26 | K 近邻分类 | `knn_predict` | ![Easy](https://img.shields.io/badge/-简单-4CAF50?style=flat-square) | 基于距离的分类 |
 | 27 | MLP 反向传播 | `mlp_backward` | ![Hard](https://img.shields.io/badge/-困难-F44336?style=flat-square) | 手写两层 MLP 反向传播 |
+| 36 | MLP XOR 训练 | `mlp_xor` | ![Hard](https://img.shields.io/badge/-困难-F44336?style=flat-square) | 完整 MLP 训练循环（纯 NumPy），He 初始化，MSE 损失 |
 | 28 | 贪心解码 | `greedy_decode` | ![Easy](https://img.shields.io/badge/-简单-4CAF50?style=flat-square) | Argmax 逐步选取 token |
 | 29 | 束搜索 | `beam_search_decode` | ![Hard](https://img.shields.io/badge/-困难-F44336?style=flat-square) | Beam Search 解码策略 |
 | 30 | 温度采样 | `temperature_sample` | ![Medium](https://img.shields.io/badge/-中等-FF9800?style=flat-square) | 温度缩放 softmax 采样 |
@@ -218,7 +220,7 @@ status()                    # 进度面板
 | **2** | 注意力 | SDPA、MHA、Causal、GQA、Sliding Window、Linear Attention | 3–4 小时 |
 | **3** | 现代组件 | GELU、SiLU、SwiGLU、LoRA、DoRA | 2–3 小时 |
 | **4** | 进阶话题 | AdaLN、FiLM、RoPE、KV Cache、GPT-2 Block | 3–4 小时 |
-| **5** | ML 与 RLHF | K-Means、KNN、MLP 反向传播、解码策略、PPO、DPO、GRPO | 3–4 小时 |
+| **5** | ML 与 RLHF | K-Means、KNN、MLP 反向传播、MLP XOR 训练、解码策略、PPO、DPO、GRPO | 3–4 小时 |
 
 ---
 
@@ -266,7 +268,7 @@ TASK = {
 <details>
 <summary><b>与 TorchCode 有什么不同？</b></summary>
 <br>
-HappyTorch 基于 <a href="https://github.com/duoan/TorchCode">TorchCode</a>（13 题）扩展了 22 道新题目，涵盖现代激活函数、LoRA/DoRA、Diffusion 组件、LLM 推理、解码策略和 RLHF 算法。
+HappyTorch 基于 <a href="https://github.com/duoan/TorchCode">TorchCode</a>（13 题）扩展了 23 道新题目，涵盖现代激活函数、LoRA/DoRA、Diffusion 组件、LLM 推理、解码策略、RLHF 算法和纯 NumPy 手写 MLP 训练。
 </details>
 
 ---
@@ -279,6 +281,7 @@ HappyTorch 基于 <a href="https://github.com/duoan/TorchCode">TorchCode</a>（1
 - [chaoyitud](https://github.com/chaoyitud) — ML 基础和 RLHF 练习题目
 - [fiberproduct](https://github.com/fiberproduct) — RoPE 题目修复
 - [Rivflyyy](https://github.com/Rivflyyy) — [happytorch-plugin](https://github.com/Rivflyyy/happytorch-plugin) 插件
+- [SongHuang1](https://github.com/SongHuang1) — MLP XOR 训练题目
 
 ## 许可证
 
