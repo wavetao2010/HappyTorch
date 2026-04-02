@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "pencil": {
+      "command": "/Users/chan/.vscode/extensions/highagency.pencildev-0.6.32/out/mcp-server-darwin-x64",
+      "args": ["--app", "visual_studio_code"],
+      "type": "stdio"
+    }
+  }
+}
