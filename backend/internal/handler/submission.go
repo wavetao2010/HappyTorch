@@ -64,7 +64,6 @@ func (h *SubmissionHandler) Submit(c *gin.Context) {
 }
 
 func (h *SubmissionHandler) GetSolution(c *gin.Context) {
-	userID := c.MustGet(middleware.ContextUserID).(uuid.UUID)
 	slug := c.Param("slug")
 
 	problem, err := h.problemService.GetBySlug(slug)
@@ -73,13 +72,8 @@ func (h *SubmissionHandler) GetSolution(c *gin.Context) {
 		return
 	}
 
-	solved, err := h.submissionService.HasSolved(userID, problem.ID)
-	if err != nil || !solved {
-		c.JSON(http.StatusForbidden, gin.H{"error": "you must solve this problem before viewing the solution"})
-		return
-	}
-
 	c.JSON(http.StatusOK, gin.H{
-		"solution": problem.SolutionMarkdown,
+		"solution":      problem.SolutionMarkdown,
+		"solution_code": problem.SolutionCode,
 	})
 }

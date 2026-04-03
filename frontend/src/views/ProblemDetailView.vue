@@ -16,6 +16,7 @@ const activeTab = ref<'description' | 'solution'>('description')
 const submitting = ref(false)
 const result = ref<SubmissionResult | null>(null)
 const solutionMarkdown = ref('')
+const solutionCode = ref('')
 const solutionLoaded = ref(false)
 const showResults = ref(false)
 
@@ -85,10 +86,12 @@ async function loadSolution() {
   if (solutionLoaded.value) return
   try {
     const res = await getSolution(slug.value)
-    solutionMarkdown.value = res.data.solution
+    solutionMarkdown.value = res.data.solution || ''
+    solutionCode.value = res.data.solution_code || ''
     solutionLoaded.value = true
   } catch {
-    solutionMarkdown.value = 'Solution not available yet.'
+    solutionMarkdown.value = ''
+    solutionCode.value = ''
     solutionLoaded.value = true
   }
 }
@@ -149,7 +152,16 @@ async function loadSolution() {
 
           <div v-else class="solution-panel">
             <div v-if="!solutionLoaded" class="loading">Loading solution...</div>
-            <div v-else class="markdown-content" v-html="solutionHtml" />
+            <template v-else>
+              <div v-if="!solutionMarkdown && !solutionCode" class="empty">Solution not available yet.</div>
+              <template v-else>
+                <div v-if="solutionMarkdown" class="markdown-content" v-html="solutionHtml" />
+                <div v-if="solutionCode" class="section">
+                  <h3>Reference Code</h3>
+                  <pre class="code-block">{{ solutionCode }}</pre>
+                </div>
+              </template>
+            </template>
           </div>
         </div>
 
@@ -221,7 +233,8 @@ async function loadSolution() {
   overflow: hidden;
 }
 
-.loading {
+.loading,
+.empty {
   text-align: center;
   color: var(--text-secondary);
   padding: 40px;
