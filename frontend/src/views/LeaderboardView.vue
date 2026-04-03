@@ -84,8 +84,8 @@ onMounted(fetchLeaderboard)
           </td>
           <td>
             <router-link :to="`/users/${entry.username}`" class="user-cell">
-              <div class="user-avatar-sm">{{ (entry.display_name || entry.username).charAt(0).toUpperCase() }}</div>
-              <span class="user-name">{{ entry.display_name || entry.username }}</span>
+              <div class="user-avatar-sm">{{ entry.username.charAt(0).toUpperCase() }}</div>
+              <span class="user-name">{{ entry.username }}</span>
             </router-link>
           </td>
           <td class="score-col">{{ scoreValue(entry) }}</td>
