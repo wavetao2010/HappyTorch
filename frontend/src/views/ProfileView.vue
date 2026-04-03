@@ -39,7 +39,8 @@ function formatDate(iso: string): string {
     <template v-else>
       <!-- User info -->
       <div class="user-card">
-        <div class="user-avatar">{{ auth.user?.username?.charAt(0)?.toUpperCase() ?? '?' }}</div>
+        <img v-if="auth.user?.avatar_url" :src="auth.user.avatar_url" class="user-avatar" alt="avatar" />
+        <div v-else class="user-avatar user-avatar-fallback">{{ auth.user?.username?.charAt(0)?.toUpperCase() ?? '?' }}</div>
         <div class="user-details">
           <h2>{{ auth.user?.username }}</h2>
           <div v-if="progress" class="user-stats">
@@ -159,6 +160,11 @@ function formatDate(iso: string): string {
   width: 64px;
   height: 64px;
   border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.user-avatar-fallback {
   background: var(--accent);
   color: #fff;
   display: flex;
@@ -166,7 +172,6 @@ function formatDate(iso: string): string {
   justify-content: center;
   font-size: 24px;
   font-weight: 700;
-  flex-shrink: 0;
 }
 
 .user-details h2 {
