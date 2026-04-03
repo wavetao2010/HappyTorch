@@ -3,31 +3,88 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 
 	"github.com/happytorch/backend/internal/middleware"
+	"github.com/happytorch/backend/internal/model"
 	"github.com/happytorch/backend/internal/service"
 )
 
 type ProgressHandler struct {
+	db                *gorm.DB
 	submissionService *service.SubmissionService
 }
 
-func NewProgressHandler(submissionService *service.SubmissionService) *ProgressHandler {
-	return &ProgressHandler{submissionService: submissionService}
+func NewProgressHandler(db *gorm.DB, submissionService *service.SubmissionService) *ProgressHandler {
+	return &ProgressHandler{db: db, submissionService: submissionService}
 }
 
 func (h *ProgressHandler) GetProgress(c *gin.Context) {
 	userID := c.MustGet(middleware.ContextUserID).(uuid.UUID)
 
-	entries, err := h.submissionService.GetProgress(userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load progress"})
+	// Get user info (points, problems_solved)
+	var user model.User
+	if err := h.db.First(&user, "id = ?", userID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load user"})
 		return
 	}
 
+	// Calculate rank
+	var rank int64
+	h.db.Model(&model.User{}).Where("points > ?", user.Points).Count(&rank)
+	rank++ // 1-indexed
+
+	// Get problem counts by difficulty
+	type diffCount struct {
+		Difficulty string
+		Total      int
+	}
+	var diffCounts []diffCount
+	h.db.Model(&model.Problem{}).
+		Select("difficulty, COUNT(*) as total").
+		Where("status = ?", "approved").
+		Group("difficulty").
+		Scan(&diffCounts)
+
+	// Get solved counts by difficulty for this user
+	type solvedCount struct {
+		Difficulty string
+		Solved     int
+	}
+	var solvedCounts []solvedCount
+	h.db.Raw(`
+		SELECT p.difficulty, COUNT(DISTINCT p.id) as solved
+		FROM submissions s
+		JOIN problems p ON p.id = s.problem_id
+		WHERE s.user_id = ? AND s.success = true AND p.status = 'approved'
+		GROUP BY p.difficulty
+	`, userID).Scan(&solvedCounts)
+
+	// Build by_difficulty map
+	byDifficulty := map[string]gin.H{
+		"easy":   {"solved": 0, "total": 0},
+		"medium": {"solved": 0, "total": 0},
+		"hard":   {"solved": 0, "total": 0},
+	}
+	for _, dc := range diffCounts {
+		key := strings.ToLower(dc.Difficulty)
+		if _, ok := byDifficulty[key]; ok {
+			byDifficulty[key]["total"] = dc.Total
+		}
+	}
+	for _, sc := range solvedCounts {
+		key := strings.ToLower(sc.Difficulty)
+		if _, ok := byDifficulty[key]; ok {
+			byDifficulty[key]["solved"] = sc.Solved
+		}
+	}
+
+	// Also include solved/attempted slugs for problem list highlighting
+	entries, _ := h.submissionService.GetProgress(userID)
 	var solvedSlugs []string
 	var attemptedSlugs []string
 	for _, e := range entries {
@@ -40,6 +97,10 @@ func (h *ProgressHandler) GetProgress(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"progress": gin.H{
+			"points":          user.Points,
+			"solved":          user.ProblemsSolved,
+			"rank":            rank,
+			"by_difficulty":   byDifficulty,
 			"solved_slugs":    solvedSlugs,
 			"attempted_slugs": attemptedSlugs,
 		},

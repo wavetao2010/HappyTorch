@@ -69,7 +69,7 @@ func main() {
 	authHandler := handler.NewAuthHandler(authService, cfg.JWTSecret, cfg.GitHubClientID, cfg.GitHubClientSecret, cfg.FrontURL)
 	problemHandler := handler.NewProblemHandler(problemService)
 	submissionHandler := handler.NewSubmissionHandler(submissionService, problemService)
-	progressHandler := handler.NewProgressHandler(submissionService)
+	progressHandler := handler.NewProgressHandler(db, submissionService)
 	communityHandler := handler.NewCommunityHandler(communityService)
 
 	r := gin.Default()
