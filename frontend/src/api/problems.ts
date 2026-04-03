@@ -71,7 +71,7 @@ export function submitSolution(slug: string, code: string) {
 }
 
 export function getSolution(slug: string) {
-  return client.get<{ solution: string }>(`/problems/${slug}/solution`)
+  return client.get<{ solution: string; solution_code: string }>(`/problems/${slug}/solution`)
 }
 
 export function getProgress() {
