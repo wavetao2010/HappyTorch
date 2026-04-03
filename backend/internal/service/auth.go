@@ -167,7 +167,7 @@ func (s *AuthService) FindOrCreateGitHubUser(ghUser *GitHubUser) (*model.User, e
 	var user model.User
 
 	// Try to find by GitHub ID
-	err := s.db.Where("github_id = ?", ghUser.ID).First(&user).Error
+	err := s.db.Where("git_hub_id = ?", ghUser.ID).First(&user).Error
 	if err == nil {
 		// Update avatar if changed
 		if user.AvatarURL != ghUser.AvatarURL {
@@ -183,7 +183,7 @@ func (s *AuthService) FindOrCreateGitHubUser(ghUser *GitHubUser) (*model.User, e
 		if err == nil {
 			// Link GitHub ID to existing account
 			s.db.Model(&user).Updates(map[string]interface{}{
-				"github_id":  ghUser.ID,
+				"git_hub_id": ghUser.ID,
 				"avatar_url": ghUser.AvatarURL,
 			})
 			user.GitHubID = ghUser.ID
