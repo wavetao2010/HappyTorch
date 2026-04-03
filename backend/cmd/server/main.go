@@ -76,7 +76,7 @@ func main() {
 	r.Use(middleware.CORS(cfg.FrontURL))
 
 	api := r.Group("/api")
-	api.Use(middleware.RateLimitByIP(rdb, 30, time.Minute))
+	api.Use(middleware.RateLimitByIP(rdb, 100, time.Minute))
 	{
 		api.GET("/health", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"status": "ok"})
