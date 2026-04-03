@@ -191,7 +191,7 @@ func (h *CommunityHandler) GetLeaderboard(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, entries)
+	c.JSON(http.StatusOK, gin.H{"entries": entries})
 }
 
 // GET /api/users/:username
