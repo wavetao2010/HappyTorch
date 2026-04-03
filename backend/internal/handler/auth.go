@@ -54,7 +54,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	middleware.SetTokenCookies(c, accessToken, refreshToken)
-	c.JSON(http.StatusCreated, user)
+	c.JSON(http.StatusCreated, gin.H{"user": user})
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
@@ -83,7 +83,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	middleware.SetTokenCookies(c, accessToken, refreshToken)
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, gin.H{"user": user})
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
@@ -104,7 +104,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, gin.H{"user": user})
 }
 
 // GitHubLogin redirects to GitHub OAuth authorization page
